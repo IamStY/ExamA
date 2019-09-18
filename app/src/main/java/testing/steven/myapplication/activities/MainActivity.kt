@@ -16,7 +16,7 @@ import testing.steven.myapplication.datamodels.OpenDataModel
 import testing.steven.myapplication.utils.StevensSimpleRecyclerPaging
 import testing.steven.myapplication.viewmodel.MainViewModel
 
-class MainActivity : AppCompatActivity()  , StevensSimpleRecyclerPaging.ICallbackLoadMoreData{
+class MainActivity : AppCompatActivity(), StevensSimpleRecyclerPaging.ICallbackLoadMoreData {
     override fun loadmoreData() {
         val model = ViewModelProviders.of(this).get(MainViewModel::class.java)
         model.fetchData(this)
@@ -29,16 +29,18 @@ class MainActivity : AppCompatActivity()  , StevensSimpleRecyclerPaging.ICallbac
         initData()
 
     }
+
     private fun initView() {
 
-        var openDataRecyclerAdapter = OpenDataRecyclerAdapter( ArrayList<OpenDataModel>())
-        prv_open_list.adapter =openDataRecyclerAdapter
+        var openDataRecyclerAdapter = OpenDataRecyclerAdapter(ArrayList<OpenDataModel>())
+        prv_open_list.adapter = openDataRecyclerAdapter
         prv_open_list.layoutManager = LinearLayoutManager(this)
         prv_open_list.init(this)
-        prv_open_list. setHasFixedSize(true)
+        prv_open_list.setHasFixedSize(true)
 
 
     }
+
     private fun loadingIndicator(loading: Boolean?) {
 
         if (loading == true) {
@@ -47,10 +49,12 @@ class MainActivity : AppCompatActivity()  , StevensSimpleRecyclerPaging.ICallbac
             av_loading.visibility = View.GONE
         }
     }
-    private fun assignAdapterData(data : ArrayList<OpenDataModel>){
+
+    private fun assignAdapterData(data: ArrayList<OpenDataModel>) {
         var adapter = prv_open_list.adapter as OpenDataRecyclerAdapter
-        adapter.setDataArrayList( data)
+        adapter.setDataArrayList(data)
     }
+
     private fun initData() {
 
         val model = ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -62,7 +66,7 @@ class MainActivity : AppCompatActivity()  , StevensSimpleRecyclerPaging.ICallbac
             recyclerPagingState(pagingEnds)
 
         })
-        model.fetchData(this).observe(this, Observer<ArrayList<OpenDataModel>> {openDataModels ->
+        model.fetchData(this).observe(this, Observer<ArrayList<OpenDataModel>> { openDataModels ->
             assignAdapterData(openDataModels)
 
         })

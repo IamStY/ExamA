@@ -17,19 +17,21 @@ import testing.steven.myapplication.datamodels.OpenDataModel;
 public class MainViewModel extends ViewModel {
     int totalSkip = 0;
     int requestPagingAmount = 60;
-    MutableLiveData<Boolean> currentlyRequesting ;
+    MutableLiveData<Boolean> currentlyRequesting;
     protected MutableLiveData<Boolean> pagingEnds;
 
     private MutableLiveData<ArrayList<OpenDataModel>> openDataLiveData;
-    public LiveData<ArrayList<OpenDataModel>> fetchData(Context context){
 
-        if(openDataLiveData==null) {
+    public LiveData<ArrayList<OpenDataModel>> fetchData(Context context) {
+
+        if (openDataLiveData == null) {
             openDataLiveData = new MutableLiveData<>();
         }
         retrieveAPI(context);
         return openDataLiveData;
     }
-    public LiveData<Boolean> bindPagingEnds (){
+
+    public LiveData<Boolean> bindPagingEnds() {
 
         if (pagingEnds == null) {
             pagingEnds = new MutableLiveData<Boolean>();
@@ -38,7 +40,8 @@ public class MainViewModel extends ViewModel {
         }
         return pagingEnds;
     }
-    public LiveData<Boolean> bindRequestIndicator (){
+
+    public LiveData<Boolean> bindRequestIndicator() {
 
         if (currentlyRequesting == null) {
             currentlyRequesting = new MutableLiveData<Boolean>();
@@ -47,20 +50,21 @@ public class MainViewModel extends ViewModel {
         }
         return currentlyRequesting;
     }
+
     private void retrieveAPI(Context context) {
         if (currentlyRequesting.getValue() != null && !currentlyRequesting.getValue() && pagingEnds.getValue() != null && !pagingEnds.getValue()) {
 
-            Toast.makeText(context,"requestPagingAmount: "+requestPagingAmount+"requestedSkip "+totalSkip,Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "requestPagingAmount: " + requestPagingAmount + "requestedSkip " + totalSkip, Toast.LENGTH_SHORT).show();
             currentlyRequesting.setValue(true);
             ApiRequestManager.getInstance().getData(context, requestPagingAmount, totalSkip, new ICallback_Notify<ArrayList<OpenDataModel>>() {
                 @Override
                 public void dataFetched(ArrayList<OpenDataModel> data) {
                     // stop paging request , no more data
-                    if(data.size()!=requestPagingAmount){
+                    if (data.size() != requestPagingAmount) {
                         pagingEnds.postValue(true);
                     }
                     // add skip amount
-                    totalSkip +=requestPagingAmount;
+                    totalSkip += requestPagingAmount;
                     ArrayList<OpenDataModel> openDataModels = new ArrayList<>();
                     ArrayList<OpenDataModel> oldValues = openDataLiveData.getValue();
                     // append old datas
@@ -75,6 +79,8 @@ public class MainViewModel extends ViewModel {
 
                 @Override
                 public void failure() {
+                    currentlyRequesting.postValue(false);
+                    Toast.makeText(context,"APIFailure",Toast.LENGTH_LONG).show();
 
                 }
             });

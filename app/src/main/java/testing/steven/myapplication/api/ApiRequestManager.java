@@ -28,8 +28,8 @@ import java.util.Map;
 import testing.steven.myapplication.datamodels.OpenDataModel;
 
 public class ApiRequestManager {
-    Gson gson = new Gson();
-    RequestQueue requestQueue;
+    private Gson gson = new Gson();
+    private RequestQueue requestQueue;
     private static ApiRequestManager instance;
     public static synchronized ApiRequestManager getInstance() {
         if (instance != null) {
@@ -39,27 +39,24 @@ public class ApiRequestManager {
             return instance;
         }
     }
+    // function - get data from api
     public void getData(final Context context,int all , int skip,ICallback_Notify iCallback_notify) {
         String functionURL = "http://data.coa.gov.tw/Service/OpenData/TransService.aspx?UnitId=QcbUEzN6E6DL&$top="+all+"&$skip="+skip;
         sendGetRequest(new TypeToken<ArrayList<OpenDataModel>>() {
         }.getType(), context, functionURL,  iCallback_notify);
     }
+
+    // all get request entrance -
     private void sendGetRequest(final Type type, Context context, String functionURL, final ICallback_Notify iCallback_notify) {
         if(requestQueue==null) {
             requestQueue = Volley.newRequestQueue(context);
         }
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, functionURL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, functionURL, response -> {
 
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("error",error.getMessage());
-                if(iCallback_notify!=null)
-                    iCallback_notify.failure();
-            }
+        }, error -> {
+            Log.e("error",error.getMessage());
+            if(iCallback_notify!=null)
+                iCallback_notify.failure();
         }) {
             @Override
             public String getBodyContentType() {
@@ -70,28 +67,19 @@ public class ApiRequestManager {
             {
                 Map<String, String> headers = new HashMap<String, String>();
                 headers.put("Content-Type", "application/json");
-                //token
-//                if(token!=null&&token.length()>0)
-//                    headers.put("token",token);
+
                 return headers;
             }
 
             @Override
             protected Response<String> parseNetworkResponse(NetworkResponse response) {
                 String responseString = "";
-                // 400 not formated , 403 token,  404 not found , 500 api
-
-                if (response != null) {
+                  if (response != null) {
                     responseString = String.valueOf(response.statusCode);
-
-                    // can get more details such as response.headers
                 }
                 Map<String, String> responseHeaders = response.headers;
                 if (response.statusCode == 200||response.statusCode==304) {
                     String responseRoot = new String(response.data);
-
-                    Log.e("respRoot",responseRoot);
-                    Gson gson = new Gson();
                     Object object = gson.fromJson(responseRoot, type);
                     if (iCallback_notify != null)
                         iCallback_notify.dataFetched(object);
@@ -102,7 +90,6 @@ public class ApiRequestManager {
                     // Here we are, we got a 401 response and we want to do something with some header field; in this example we return the "Content-Length" field of the header as a succesfully response to the Response.Listener<String>
                     Response<String> result = Response.success(responseHeaders.get("Content-Length"), HttpHeaderParser.parseCacheHeaders(response));
 
-//                    iCallback_notify.failure();
 
                     return result;
                 }
@@ -111,7 +98,7 @@ public class ApiRequestManager {
             }
         };
         stringRequest.setRetryPolicy(new DefaultRetryPolicy(
-                100000,
+                5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         requestQueue.add(stringRequest);
